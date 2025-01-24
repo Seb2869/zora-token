@@ -9,8 +9,9 @@ import {IERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/IERC2
 import {Nonces} from "@openzeppelin/contracts/utils/Nonces.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {ERC20Capped} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
-contract Zora is ERC20Votes, IERC20Permit {
+contract Zora is ERC20Votes, IERC20Permit, IERC165 {
     constructor() ERC20("Zora", "ZORA") EIP712("Zora", "1") {}
 
     struct Mint {
@@ -88,5 +89,9 @@ contract Zora is ERC20Votes, IERC20Permit {
     // solhint-disable-next-line func-name-mixedcase
     function DOMAIN_SEPARATOR() external view virtual returns (bytes32) {
         return _domainSeparatorV4();
+    }
+
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+        return interfaceId == type(IERC20Permit).interfaceId;
     }
 }

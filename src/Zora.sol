@@ -12,7 +12,11 @@ import {ERC20Capped} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20C
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
 contract Zora is ERC20Votes, IERC20Permit, IERC165 {
-    constructor() ERC20("Zora", "ZORA") EIP712("Zora", "1") {}
+    address immutable deployer;
+
+    constructor() ERC20("Zora", "ZORA") EIP712("Zora", "1") {
+        deployer = msg.sender;
+    }
 
     struct Mint {
         address to;
@@ -22,21 +26,30 @@ contract Zora is ERC20Votes, IERC20Permit, IERC165 {
     bool public mintedAll;
 
     error AlreadyMinted();
+    error InvalidInputLengths();
+    error OnlyDeployer();
 
     /**
      * Mints all the supply to the given addresses.
      * @dev This isn't done in the constructor because we want to be able to mine for a deterministic address
      * without changing the creation code of the contract, which would be the case if these values were
      * hardcoded in the constructor.
-     * @param mints array of recipient addresses and amounts to mint
+     * @param tos array of recipient addresses
+     * @param amounts array of amounts to mint
      */
-    function mintSupply(Mint[] memory mints) public {
+    function mintSupply(address[] calldata tos, uint256[] calldata amounts) public {
+        if (msg.sender != deployer) {
+            revert OnlyDeployer();
+        }
         if (mintedAll) {
             revert AlreadyMinted();
         }
+        if (tos.length != amounts.length) {
+            revert InvalidInputLengths();
+        }
         mintedAll = true;
-        for (uint256 i = 0; i < mints.length; i++) {
-            _mint(mints[i].to, mints[i].amount);
+        for (uint256 i = 0; i < tos.length; i++) {
+            _mint(tos[i], amounts[i]);
         }
     }
 

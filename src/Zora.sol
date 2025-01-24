@@ -24,6 +24,9 @@ contract Zora is ERC20Votes, IERC20Permit {
 
     /**
      * Mints all the supply to the given addresses.
+     * @dev This isn't done in the constructor because we want to be able to mine for a deterministic address
+     * without changing the creation code of the contract, which would be the case if these values were
+     * hardcoded in the constructor.
      * @param mints array of recipient addresses and amounts to mint
      */
     function mintSupply(Mint[] memory mints) public {
@@ -36,7 +39,7 @@ contract Zora is ERC20Votes, IERC20Permit {
         }
     }
 
-    // ERC20Permit
+    // ERC20Permit functionality
     // copied from @openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol since we can't inherit
     // from both ERC20Permit and ERC20Votes as they both inherit from ERC20.
 

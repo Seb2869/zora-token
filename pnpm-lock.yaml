@@ -1,0 +1,92 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    devDependencies:
+      '@openzeppelin/contracts':
+        specifier: 5.0.2
+        version: 5.0.2
+      '@openzeppelin/contracts-upgradeable':
+        specifier: 5.0.2
+        version: 5.0.2(@openzeppelin/contracts@5.0.2)
+      '@solidity-parser/parser':
+        specifier: 0.19.0
+        version: 0.19.0
+      ds-test:
+        specifier: https://github.com/dapphub/ds-test#cd98eff28324bfac652e63a239a60632a761790b
+        version: https://codeload.github.com/dapphub/ds-test/tar.gz/cd98eff28324bfac652e63a239a60632a761790b
+      forge-std:
+        specifier: https://github.com/foundry-rs/forge-std#v1.9.1
+        version: https://codeload.github.com/foundry-rs/forge-std/tar.gz/07263d193d621c4b2b0ce8b4d54af58f6957d97d
+      prettier:
+        specifier: ^3.0.3
+        version: 3.4.2
+      prettier-plugin-solidity:
+        specifier: ^1.4.1
+        version: 1.4.2(prettier@3.4.2)
+
+packages:
+
+  '@openzeppelin/contracts-upgradeable@5.0.2':
+    resolution: {integrity: sha512-0MmkHSHiW2NRFiT9/r5Lu4eJq5UJ4/tzlOgYXNAIj/ONkQTVnz22pLxDvp4C4uZ9he7ZFvGn3Driptn1/iU7tQ==}
+    peerDependencies:
+      '@openzeppelin/contracts': 5.0.2
+
+  '@openzeppelin/contracts@5.0.2':
+    resolution: {integrity: sha512-ytPc6eLGcHHnapAZ9S+5qsdomhjo6QBHTDRRBFfTxXIpsicMhVPouPgmUPebZZZGX7vt9USA+Z+0M0dSVtSUEA==}
+
+  '@solidity-parser/parser@0.19.0':
+    resolution: {integrity: sha512-RV16k/qIxW/wWc+mLzV3ARyKUaMUTBy9tOLMzFhtNSKYeTAanQ3a5MudJKf/8arIFnA2L27SNjarQKmFg0w/jA==}
+
+  ds-test@https://codeload.github.com/dapphub/ds-test/tar.gz/cd98eff28324bfac652e63a239a60632a761790b:
+    resolution: {tarball: https://codeload.github.com/dapphub/ds-test/tar.gz/cd98eff28324bfac652e63a239a60632a761790b}
+    version: 1.0.0
+
+  forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/07263d193d621c4b2b0ce8b4d54af58f6957d97d:
+    resolution: {tarball: https://codeload.github.com/foundry-rs/forge-std/tar.gz/07263d193d621c4b2b0ce8b4d54af58f6957d97d}
+    version: 1.9.1
+
+  prettier-plugin-solidity@1.4.2:
+    resolution: {integrity: sha512-VVD/4XlDjSzyPWWCPW8JEleFa8JNKFYac5kNlMjVXemQyQZKfpekPMhFZSePuXB6L+RixlFvWe20iacGjFYrLw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      prettier: '>=2.3.0'
+
+  prettier@3.4.2:
+    resolution: {integrity: sha512-e9MewbtFo+Fevyuxn/4rrcDAaq0IYxPGLvObpQjiZBMAzB9IGmzlnG9RZy3FFas+eBMu2vA0CszMeduow5dIuQ==}
+    engines: {node: '>=14'}
+    hasBin: true
+
+  semver@7.6.3:
+    resolution: {integrity: sha512-oVekP1cKtI+CTDvHWYFUcMtsK/00wmAEfyqKfNdARm8u1wNVhSgaX7A8d4UuIlUI5e84iEwOhs7ZPYRmzU9U6A==}
+    engines: {node: '>=10'}
+    hasBin: true
+
+snapshots:
+
+  '@openzeppelin/contracts-upgradeable@5.0.2(@openzeppelin/contracts@5.0.2)':
+    dependencies:
+      '@openzeppelin/contracts': 5.0.2
+
+  '@openzeppelin/contracts@5.0.2': {}
+
+  '@solidity-parser/parser@0.19.0': {}
+
+  ds-test@https://codeload.github.com/dapphub/ds-test/tar.gz/cd98eff28324bfac652e63a239a60632a761790b: {}
+
+  forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/07263d193d621c4b2b0ce8b4d54af58f6957d97d: {}
+
+  prettier-plugin-solidity@1.4.2(prettier@3.4.2):
+    dependencies:
+      '@solidity-parser/parser': 0.19.0
+      prettier: 3.4.2
+      semver: 7.6.3
+
+  prettier@3.4.2: {}
+
+  semver@7.6.3: {}

@@ -7,3 +7,17 @@ This repository contains the contracts for the Zora token.
 ## Contracts
 
 - [Zora.sol](./src/Zora.sol) - The main Zora token contract.
+
+## Setup
+
+Install dependencies
+
+```bash
+pnpm install
+```
+
+## Run tests in watch mode
+
+```bash
+pnpm dev
+```

@@ -6,19 +6,15 @@ import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20P
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 import {Nonces} from "@openzeppelin/contracts/utils/Nonces.sol";
+import {IZora} from "./IZora.sol";
 
-contract Zora is ERC20, ERC20Permit, ERC20Votes {
+contract Zora is IZora, ERC20, ERC20Permit, ERC20Votes {
     address immutable deployer;
+    bool public mintedAll;
 
     constructor() ERC20("Zora", "ZORA") ERC20Permit("Zora") {
         deployer = msg.sender;
     }
-
-    bool public mintedAll;
-
-    error AlreadyMinted();
-    error InvalidInputLengths();
-    error OnlyDeployer();
 
     /**
      * Mints all the supply to the given addresses.

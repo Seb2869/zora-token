@@ -25,16 +25,11 @@ contract Zora is IZora, ERC20, ERC20Permit, ERC20Votes {
      * @param amounts array of amounts to mint
      */
     function mintSupply(address[] calldata tos, uint256[] calldata amounts) public {
-        if (msg.sender != deployer) {
-            revert OnlyDeployer();
-        }
-        if (mintedAll) {
-            revert AlreadyMinted();
-        }
-        if (tos.length != amounts.length) {
-            revert InvalidInputLengths();
-        }
+        require(msg.sender == deployer, OnlyDeployer());
+        require(!mintedAll, AlreadyMinted());
         mintedAll = true;
+        require(tos.length == amounts.length, InvalidInputLengths());
+
         for (uint256 i = 0; i < tos.length; i++) {
             _mint(tos[i], amounts[i]);
         }

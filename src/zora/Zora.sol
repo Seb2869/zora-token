@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity >=0.8.28;
 
 import {ERC20Votes} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol";
 import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
@@ -9,13 +9,13 @@ import {Nonces} from "@openzeppelin/contracts/utils/Nonces.sol";
 import {IZora} from "./IZora.sol";
 
 contract Zora is IZora, ERC20, ERC20Permit, ERC20Votes {
-    /// @dev Deployer address allowed to mint total supply
-    address immutable deployer;
+    /// @dev Account allowed to mint total supply
+    address immutable minter;
     /// @dev Flag that determines that all supply was allocated and cannot be re-allocated
     bool public mintedAll;
 
-    constructor() ERC20("Zora", "ZORA") ERC20Permit("Zora") {
-        deployer = msg.sender;
+    constructor(address _minter) ERC20("Zora", "ZORA") ERC20Permit("Zora") {
+        minter = _minter;
     }
 
     /**
@@ -27,8 +27,8 @@ contract Zora is IZora, ERC20, ERC20Permit, ERC20Votes {
      * @param amounts array of amounts to mint
      */
     function mintSupply(address[] calldata tos, uint256[] calldata amounts) public {
-        require(msg.sender == deployer, OnlyDeployer());
         require(tos.length == amounts.length, InvalidInputLengths());
+        require(msg.sender == minter, OnlyMinter());
         require(!mintedAll, AlreadyMinted());
         mintedAll = true;
 

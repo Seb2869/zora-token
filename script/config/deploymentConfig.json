@@ -1,0 +1,15 @@
+{
+  "initialMints": [
+    {
+      "name": "zora",
+      "addr": "0x7bf90111Ad7C22bec9E9dFf8A01A44713CC1b1B6",
+      "amount": "5_000_000_000"
+    },
+    {
+      "name": "claimContract",
+      "addr": "0x7bf90111Ad7C22bec9E9dFf8A01A44713CC1b1B6",
+      "amount": "5_000_000_000"
+    }
+  ],
+  "minter": "0xa4ebd1b04274e7c60885bebd40e87e9ed9e51fdd"
+}

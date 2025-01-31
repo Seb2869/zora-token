@@ -7,6 +7,13 @@ settings:
 importers:
 
   .:
+    dependencies:
+      solady:
+        specifier: ^0.1.1
+        version: 0.1.1
+      solmate:
+        specifier: ^6.8.0
+        version: 6.8.0
     devDependencies:
       '@openzeppelin/contracts':
         specifier: 5.0.2
@@ -67,6 +74,12 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  solady@0.1.1:
+    resolution: {integrity: sha512-y9KDAlux9wl8xh/oXt3Z+0Tl0PiOEd2wJxkqUWYNn5UPZLtxS9H3nenX8E8MRP5Y8LfohFiX5ULPM4qjEdCFxw==}
+
+  solmate@6.8.0:
+    resolution: {integrity: sha512-/oI8kgEvSxGG1mrFv3FmCEZd0F8Z9VzRmoYMIhzmmzt6mjtPwfdCm3oh8yOL7bMHJBSfXJuMpnMPrM0uyaKsKg==}
+
 snapshots:
 
   '@openzeppelin/contracts-upgradeable@5.0.2(@openzeppelin/contracts@5.0.2)':
@@ -90,3 +103,7 @@ snapshots:
   prettier@3.4.2: {}
 
   semver@7.6.3: {}
+
+  solady@0.1.1: {}
+
+  solmate@6.8.0: {}

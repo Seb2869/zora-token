@@ -21,3 +21,7 @@ pnpm install
 ```bash
 pnpm dev
 ```
+
+## Deployment
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for instructions on deploying the token.

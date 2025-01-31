@@ -8,9 +8,9 @@ optimizer = true
 optimizer_runs = 1_000_000
 fs_permissions = [
   { access = "readwrite", path = "./addresses" },
+  { access = "readwrite", path = "./script/config" },
   { access = "read", path = "./package.json" },
 ]
 
 [rpc_endpoints]
-base = "https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}"
-base_sepolia = "https://base-sepolia.g.alchemy.com/v2/${ALCHEMY_KEY}"
+base = "https://base.gateway.tenderly.co/${TENDERLY_KEY}"

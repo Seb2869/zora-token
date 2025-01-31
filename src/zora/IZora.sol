@@ -12,5 +12,5 @@ interface IZora {
     /// @dev Invalid input lengths when the tos and amounts array lengths do not match
     error InvalidInputLengths();
     /// @dev Error when any user other than the deployer attempts to mint the initial and final supply.
-    error OnlyDeployer();
+    error OnlyMinter();
 }

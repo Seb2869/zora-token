@@ -25,3 +25,7 @@ pnpm dev
 ## Deployment
 
 See [DEPLOYMENT.md](./DEPLOYMENT.md) for instructions on deploying the token.
+
+## Public
+
+The public webroot for metadata is `metadata/`. Be mindful with files in that directory.

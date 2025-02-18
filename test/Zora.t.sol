@@ -13,6 +13,9 @@ contract ZoraTest is Test {
 
     address constant IMMUTABLE_CREATE2_FACTORY_ADDRESS = 0x0000000000FFe8B47B3e2130213B802212439497;
 
+    // Get reference to the Immutable Create2 Factory contract
+    IImmutableCreate2Factory IMMUTABLE_CREATE2_FACTORY = IImmutableCreate2Factory(IMMUTABLE_CREATE2_FACTORY_ADDRESS);
+
     function testCanMintInitialDistribution() public {
         address[] memory tos = new address[](2);
         uint256[] memory amounts = new uint256[](2);
@@ -25,13 +28,13 @@ contract ZoraTest is Test {
 
         vm.startPrank(deployer);
         Zora zora = new Zora(deployer);
-        zora.mintSupply(tos, amounts);
+        zora.initialize(tos, amounts, "testing");
 
         assertEq(zora.balanceOf(tos[0]), amounts[0]);
         assertEq(zora.balanceOf(tos[1]), amounts[1]);
     }
 
-    function testCannotMintAfterAllSupplyIsMinted() public {
+    function testCannotInitializeAfterAllSupplyIsMinted() public {
         address[] memory tos = new address[](1);
         uint256[] memory amounts = new uint256[](1);
 
@@ -41,10 +44,10 @@ contract ZoraTest is Test {
 
         Zora zora = new Zora(deployer);
         vm.startPrank(deployer);
-        zora.mintSupply(tos, amounts);
+        zora.initialize(tos, amounts, "testing");
 
-        vm.expectRevert(IZora.AlreadyMinted.selector);
-        zora.mintSupply(new address[](0), new uint256[](0));
+        vm.expectRevert(abi.encodeWithSignature("InvalidInitialization()"));
+        zora.initialize(new address[](0), new uint256[](0), "");
     }
 
     function testCannotMintIfNotDeployer() public {
@@ -58,15 +61,12 @@ contract ZoraTest is Test {
 
         vm.prank(makeAddr("not-deployer"));
         vm.expectRevert(IZora.OnlyMinter.selector);
-        zora.mintSupply(tos, amounts);
+        zora.initialize(tos, amounts, "");
     }
 
     function testCanDeterministicallyDeployAtAddress() public {
         // Fork Base network so we have the Immutable Create2 Factory deployed
         vm.createSelectFork("base", 25695331);
-
-        // Get reference to the Immutable Create2 Factory contract
-        IImmutableCreate2Factory IMMUTABLE_CREATE2_FACTORY = IImmutableCreate2Factory(IMMUTABLE_CREATE2_FACTORY_ADDRESS);
 
         // Create a deterministic salt by combining the factory deployer's address with a suffix
         bytes32 zoraSalt = saltWithAddressInFirst20Bytes(address(0), 3);
@@ -88,15 +88,15 @@ contract ZoraTest is Test {
         amounts[0] = 10 * 10 ** 18;
         amounts[1] = 50 * 10 ** 18;
 
-        // Encode the initial mintSupply call for the Zora token
+        // Encode the initial initialize call for the Zora token
 
         // Test access control: factory deployer cannot deploy Zora token
         vm.expectRevert(IZora.OnlyMinter.selector);
-        IZora(zora).mintSupply(tos, amounts);
+        IZora(zora).initialize(tos, amounts, "uri");
 
         // Deploy Zora token with initial distribution using the authorized deployer
         vm.prank(deployer);
-        IZora(zora).mintSupply(tos, amounts);
+        IZora(zora).initialize(tos, amounts, "uri");
 
         // Verify initial token distribution was successful
         assertEq(IERC20(zora).balanceOf(tos[0]), amounts[0]);
@@ -109,5 +109,16 @@ contract ZoraTest is Test {
         // shifted on the left, suffix on the right:
 
         return bytes32(shifted | suffix);
+    }
+
+    function testContractURI() public {
+        Zora zora = new Zora(deployer);
+        vm.assertEq(zora.contractURI(), "");
+        vm.prank(deployer);
+        string memory uri = "uri://";
+        address[] memory tos = new address[](0);
+        uint256[] memory amounts = new uint256[](0);
+        zora.initialize(tos, amounts, uri);
+        vm.assertEq(zora.contractURI(), "uri://");
     }
 }

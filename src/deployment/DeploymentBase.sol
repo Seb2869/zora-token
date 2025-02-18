@@ -100,12 +100,12 @@ contract DeploymentBase is Script {
         }
     }
 
-    function getMintSupplyCall() internal view returns (address from, bytes memory call) {
+    function getInitializeCall() internal view returns (address from, bytes memory call) {
         DeploymentConfig memory config = getDeploymentConfig();
 
         from = config.minter;
 
         (address[] memory tos, uint256[] memory amounts) = getInitialMints();
-        call = abi.encodeWithSelector(IZora.mintSupply.selector, tos, amounts);
+        call = abi.encodeWithSelector(IZora.initialize.selector, tos, amounts);
     }
 }

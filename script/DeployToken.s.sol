@@ -15,7 +15,7 @@ contract DeployToken is DeploymentBase {
         DeterministicConfig memory deterministicConfig = getDeterministicConfig();
 
         vm.startBroadcast();
-        // deploy the zora token contract and call the mintSupply function
+        // deploy the zora token contract and call the initialize function
         // can only be called by the deployer
         address zoraToken = getImmutableCreate2Factory().safeCreate2(deterministicConfig.salt, deterministicConfig.creationCode);
 
@@ -23,12 +23,12 @@ contract DeployToken is DeploymentBase {
 
         vm.stopBroadcast();
 
-        (address mintSupplyFrom, bytes memory mintSupplyCall) = getMintSupplyCall();
+        (address initializeFrom, bytes memory initializeCall) = getInitializeCall();
 
         // print out instruction for minting the supply
         console2.log("Execute the following call to mint the supply:");
-        console2.log("Multisig:", mintSupplyFrom);
+        console2.log("Multisig:", initializeFrom);
         console2.log("Call:");
-        console2.logBytes(mintSupplyCall);
+        console2.logBytes(initializeCall);
     }
 }

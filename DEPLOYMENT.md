@@ -36,7 +36,7 @@ The above command will print out the call to mint the supply, which must be exec
 The mint supply call was printed in the previous step. If it is needed again, it can be printed out by running:
 
 ```bash
-forge script script/PrintMintSupplyCall.s.sol $(chains base --rpc)
+forge script script/PrintInitializeCall.s.sol $(chains base --rpc)
 ```
 
 The call must be executed by the multisig.

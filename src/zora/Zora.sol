@@ -6,13 +6,15 @@ import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20P
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 import {Nonces} from "@openzeppelin/contracts/utils/Nonces.sol";
+import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import {IZora} from "./IZora.sol";
 
-contract Zora is IZora, ERC20, ERC20Permit, ERC20Votes {
+contract Zora is IZora, ERC20, ERC20Permit, ERC20Votes, Initializable {
     /// @dev Account allowed to mint total supply
     address immutable minter;
-    /// @dev Flag that determines that all supply was allocated and cannot be re-allocated
-    bool public mintedAll;
+
+    /// @dev Contract URI (only set at initialize)
+    string _contractURI;
 
     constructor(address _minter) ERC20("Zora", "ZORA") ERC20Permit("Zora") {
         minter = _minter;
@@ -26,15 +28,20 @@ contract Zora is IZora, ERC20, ERC20Permit, ERC20Votes {
      * @param tos array of recipient addresses
      * @param amounts array of amounts to mint
      */
-    function mintSupply(address[] calldata tos, uint256[] calldata amounts) public {
+    function initialize(address[] calldata tos, uint256[] calldata amounts, string memory contractURI_) public initializer {
         require(tos.length == amounts.length, InvalidInputLengths());
         require(msg.sender == minter, OnlyMinter());
-        require(!mintedAll, AlreadyMinted());
-        mintedAll = true;
+        require(bytes(contractURI_).length > 0, URINeedsToBeSet());
+
+        _contractURI = contractURI_;
 
         for (uint256 i = 0; i < tos.length; i++) {
             _mint(tos[i], amounts[i]);
         }
+    }
+
+    function contractURI() external view returns (string memory) {
+        return _contractURI;
     }
 
     /// @dev Needed to override this OZ function to allow for both ERC20 and ERC20Votes inheritance

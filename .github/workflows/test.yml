@@ -1,0 +1,56 @@
+on:
+  push:
+
+jobs:
+  check:
+    strategy:
+      fail-fast: true
+
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set initial test status
+        uses: myrotvorets/set-commit-status-action@v2.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          status: pending
+          context: Test status
+
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.10.0
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+        shell: bash
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly-6b07c77eb1c1d1c4b56ffa7f79240254b73236d2
+
+      - name: Build contracts
+        run: |
+          forge build
+
+      - name: Test
+        run: |
+          forge test
+        env:
+          TENDERLY_KEY: ${{ secrets.TENDERLY_KEY }}
+
+      - name: Set initial test status
+        uses: myrotvorets/set-commit-status-action@v2.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          status: ${{ job.status }}
+          context: Test status

@@ -1,0 +1,57 @@
+on:
+  push:
+
+jobs:
+  check:
+    strategy:
+      fail-fast: true
+
+    name: Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.10.0
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+        shell: bash
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly-6b07c77eb1c1d1c4b56ffa7f79240254b73236d2
+
+      - name: Run Forge coverage
+        run: forge coverage --report lcov
+        env:
+          TENDERLY_KEY: ${{ secrets.TENDERLY_KEY }}
+
+      - name: Setup LCOV
+        uses: hrishikesh-kadam/setup-lcov@v1
+
+      - name: Filter files to ignore
+        run: |
+          lcov --rc lcov_branch_coverage=1 \
+          --remove lcov.info \
+          --ignore-errors unused \
+          --output-file lcov.info "*test*" "script/*" "src/deployment*"
+
+      - name: Report code coverage
+        uses: iainnash/github-actions-report-lcov@v12
+        with:
+          output-html: false
+          coverage-files: ./lcov.info
+          minimum-coverage: 87
+          github-token: ${{ secrets.GITHUB_TOKEN }}

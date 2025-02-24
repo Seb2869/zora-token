@@ -41,11 +41,11 @@ contract ZoraTokenCommunityClaim is EIP712 {
     }
 
     function setAllocations(address[] calldata _accounts, uint256[] calldata _amounts) external {
-        if (_accounts.length != _amounts.length) revert ArrayLengthMismatch();
+        require(_accounts.length == _amounts.length, ArrayLengthMismatch());
         // only admin can add allocations
-        if (msg.sender != admin) revert OnlyAdmin();
+        require(msg.sender == admin, OnlyAdmin());
         // cannot add allocations after claim has started
-        if (claimIsOpen()) revert ClaimOpened();
+        require(!claimIsOpen(), ClaimOpened());
 
         emit AllocationsSet(_accounts, _amounts);
 
@@ -59,9 +59,6 @@ contract ZoraTokenCommunityClaim is EIP712 {
     }
 
     function claim(address _claimTo) external {
-        if (!claimIsOpen()) revert ClaimNotOpen();
-        if (allocations[msg.sender] == 0) revert NoAllocation();
-
         _claim(msg.sender, _claimTo);
     }
 
@@ -71,9 +68,7 @@ contract ZoraTokenCommunityClaim is EIP712 {
     /// @param _deadline The deadline for the signature to be valid
     /// @param _signature The signature authorizing the claim
     function claimWithSignature(address _user, address _claimTo, uint256 _deadline, bytes calldata _signature) external {
-        if (!claimIsOpen()) revert ClaimNotOpen();
-        if (block.timestamp > _deadline) revert SignatureExpired();
-        if (allocations[_user] == 0) revert NoAllocation();
+        require(block.timestamp <= _deadline, SignatureExpired());
 
         // Verify signature
         // Note: We don't need a nonce for replay protection because:
@@ -90,10 +85,9 @@ contract ZoraTokenCommunityClaim is EIP712 {
         _claim(_user, _claimTo);
     }
 
-    /// @notice Internal function to handle the claiming logic
-    /// @param _user The user who is claiming tokens
-    /// @param _claimTo The address to send the tokens to
     function _claim(address _user, address _claimTo) private {
+        require(claimIsOpen(), ClaimNotOpen());
+        require(allocations[_user] > 0, NoAllocation());
         uint256 amount = allocations[_user];
         // Set allocation to 0 before transfer
         allocations[_user] = 0;

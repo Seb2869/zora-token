@@ -3,12 +3,20 @@ pragma solidity ^0.8.28;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {SignatureChecker} from "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
+import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 
 /// @title Zora Token Claim
 /// @notice Contract for distributing tokens to the Zora community
 /// @dev Allows an admin to set allocations in advance using a storage mapping of addresses to amounts,
 /// avoiding the blockspace congestion that can occur with merkle proofs during claiming
-contract ZoraTokenCommunityClaim {
+contract ZoraTokenCommunityClaim is EIP712 {
+    string private constant DOMAIN_NAME = "ZoraTokenCommunityClaim";
+    string private constant DOMAIN_VERSION = "1";
+
+    // Type hash for the ClaimWithSignature struct
+    bytes32 private constant CLAIM_TYPEHASH = keccak256("ClaimWithSignature(address user,address claimTo,uint256 deadline)");
+
     address public immutable admin;
     uint256 public immutable claimStart;
     IERC20 public immutable token;
@@ -20,11 +28,13 @@ contract ZoraTokenCommunityClaim {
     error ClaimOpened();
     error ArrayLengthMismatch();
     error NoAllocation();
+    error InvalidSignature();
+    error SignatureExpired();
 
     event AllocationsSet(address[] indexed accounts, uint256[] amounts);
     event Claimed(address indexed account, address indexed claimTo, uint256 amount);
 
-    constructor(address _admin, uint256 _claimStart, address _token) {
+    constructor(address _admin, uint256 _claimStart, address _token) EIP712(DOMAIN_NAME, DOMAIN_VERSION) {
         admin = _admin;
         claimStart = _claimStart;
         token = IERC20(_token);
@@ -45,16 +55,55 @@ contract ZoraTokenCommunityClaim {
     }
 
     function claimIsOpen() public view returns (bool) {
-        return block.timestamp < claimStart;
+        return block.timestamp >= claimStart;
     }
 
     function claim(address _claimTo) external {
         if (!claimIsOpen()) revert ClaimNotOpen();
         if (allocations[msg.sender] == 0) revert NoAllocation();
-        emit Claimed(msg.sender, _claimTo, allocations[msg.sender]);
-        // set that allocation is claimed
-        allocations[msg.sender] = 0;
 
-        SafeERC20.safeTransfer(token, _claimTo, allocations[msg.sender]);
+        _claim(msg.sender, _claimTo);
+    }
+
+    /// @notice Claims tokens on behalf of a user with their signature
+    /// @param _user The user who is delegating their claim
+    /// @param _claimTo The address to send the tokens to
+    /// @param _deadline The deadline for the signature to be valid
+    /// @param _signature The signature authorizing the claim
+    function claimWithSignature(address _user, address _claimTo, uint256 _deadline, bytes calldata _signature) external {
+        if (!claimIsOpen()) revert ClaimNotOpen();
+        if (block.timestamp > _deadline) revert SignatureExpired();
+        if (allocations[_user] == 0) revert NoAllocation();
+
+        // Verify signature
+        // Note: We don't need a nonce for replay protection because:
+        // 1. Allocations can only be set before claiming starts. So once claiming is open, the allocation amount cannot be changed until the user claims.
+        // 2. Each address can only claim once (allocation is set to 0 after claiming)
+        bytes32 structHash = keccak256(abi.encode(CLAIM_TYPEHASH, _user, _claimTo, _deadline));
+
+        bytes32 digest = _hashTypedDataV4(structHash);
+
+        if (!SignatureChecker.isValidSignatureNow(_user, digest, _signature)) {
+            revert InvalidSignature();
+        }
+
+        _claim(_user, _claimTo);
+    }
+
+    /// @notice Internal function to handle the claiming logic
+    /// @param _user The user who is claiming tokens
+    /// @param _claimTo The address to send the tokens to
+    function _claim(address _user, address _claimTo) private {
+        uint256 amount = allocations[_user];
+        // Set allocation to 0 before transfer
+        allocations[_user] = 0;
+
+        emit Claimed(_user, _claimTo, amount);
+        SafeERC20.safeTransfer(token, _claimTo, amount);
+    }
+
+    // Make the domain separator accessible for testing
+    function getDomainSeparator() public view returns (bytes32) {
+        return _domainSeparatorV4();
     }
 }

@@ -124,7 +124,8 @@ contract ZoraTokenCommunityClaimTest is Test {
 
         // Verify
         assertEq(token.balanceOf(user1), amount);
-        assertEq(claim.allocations(user1), 0);
+        assertEq(claim.allocations(user1), amount);
+        assertEq(claim.hasClaimed(user1), true);
     }
 
     function testCannotClaimBeforeStart() public {
@@ -177,7 +178,8 @@ contract ZoraTokenCommunityClaimTest is Test {
 
         // Verify
         assertEq(token.balanceOf(recipient), amount);
-        assertEq(claim.allocations(signer), 0);
+        assertEq(claim.allocations(signer), amount);
+        assertEq(claim.hasClaimed(signer), true);
     }
 
     function testCannotReuseSignature() public {
@@ -205,7 +207,7 @@ contract ZoraTokenCommunityClaimTest is Test {
         claim.claimWithSignature(signer, recipient, deadline, signature);
 
         // Second claim should fail due to no allocation
-        vm.expectRevert(ZoraTokenCommunityClaim.NoAllocation.selector);
+        vm.expectRevert(ZoraTokenCommunityClaim.AlreadyClaimed.selector);
         claim.claimWithSignature(signer, recipient, deadline, signature);
     }
 
@@ -290,7 +292,8 @@ contract ZoraTokenCommunityClaimTest is Test {
 
         // Verify
         assertEq(token.balanceOf(recipient), amount);
-        assertEq(claim.allocations(address(smartWallet)), 0);
+        assertEq(claim.allocations(address(smartWallet)), amount);
+        assertEq(claim.hasClaimed(address(smartWallet)), true);
     }
 
     function testSmartWalletClaimWithInvalidSigner() public {

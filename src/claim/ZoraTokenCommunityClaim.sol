@@ -22,12 +22,14 @@ contract ZoraTokenCommunityClaim is EIP712 {
     IERC20 public immutable token;
 
     mapping(address => uint256) public allocations;
+    mapping(address => bool) public hasClaimed;
 
     error OnlyAdmin();
     error ClaimNotOpen();
     error ClaimOpened();
     error ArrayLengthMismatch();
     error NoAllocation();
+    error AlreadyClaimed();
     error InvalidSignature();
     error SignatureExpired();
 
@@ -72,8 +74,8 @@ contract ZoraTokenCommunityClaim is EIP712 {
 
         // Verify signature
         // Note: We don't need a nonce for replay protection because:
-        // 1. Allocations can only be set before claiming starts. So once claiming is open, the allocation amount cannot be changed until the user claims.
-        // 2. Each address can only claim once (allocation is set to 0 after claiming)
+        // 1. Allocations can only be set before claiming starts
+        // 2. Each address can only claim once (tracked by hasClaimed mapping)
         bytes32 structHash = keccak256(abi.encode(CLAIM_TYPEHASH, _user, _claimTo, _deadline));
 
         bytes32 digest = _hashTypedDataV4(structHash);
@@ -88,9 +90,11 @@ contract ZoraTokenCommunityClaim is EIP712 {
     function _claim(address _user, address _claimTo) private {
         require(claimIsOpen(), ClaimNotOpen());
         require(allocations[_user] > 0, NoAllocation());
+        require(!hasClaimed[_user], AlreadyClaimed());
+
         uint256 amount = allocations[_user];
-        // Set allocation to 0 before transfer
-        allocations[_user] = 0;
+        // Mark as claimed before transfer
+        hasClaimed[_user] = true;
 
         emit Claimed(_user, _claimTo, amount);
         SafeERC20.safeTransfer(token, _claimTo, amount);

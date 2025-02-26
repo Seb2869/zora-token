@@ -19,8 +19,8 @@ contract DeploymentBase is Script {
     }
 
     struct DeploymentConfig {
+        address admin;
         InitialMint[] initialMints;
-        address minter;
     }
 
     struct DeterministicConfig {
@@ -103,7 +103,7 @@ contract DeploymentBase is Script {
     function getInitializeCall() internal view returns (address from, bytes memory call) {
         DeploymentConfig memory config = getDeploymentConfig();
 
-        from = config.minter;
+        from = config.admin;
 
         (address[] memory tos, uint256[] memory amounts) = getInitialMints();
         call = abi.encodeWithSelector(IZora.initialize.selector, tos, amounts);

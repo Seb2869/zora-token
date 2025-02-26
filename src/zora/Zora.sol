@@ -11,13 +11,14 @@ import {IZora} from "./IZora.sol";
 
 contract Zora is IZora, ERC20, ERC20Permit, ERC20Votes, Initializable {
     /// @dev Account allowed to mint total supply
-    address immutable minter;
+    address immutable initializerAccount;
 
     /// @dev Contract URI (only set at initialize)
     string _contractURI;
 
-    constructor(address _minter) ERC20("Zora", "ZORA") ERC20Permit("Zora") {
-        minter = _minter;
+    constructor(address _initializerAccount) ERC20("Zora", "ZORA") ERC20Permit("Zora") {
+        require(_initializerAccount != address(0), InitializerCannotBeAddressZero());
+        initializerAccount = _initializerAccount;
     }
 
     /**
@@ -30,7 +31,7 @@ contract Zora is IZora, ERC20, ERC20Permit, ERC20Votes, Initializable {
      */
     function initialize(address[] calldata tos, uint256[] calldata amounts, string memory contractURI_) public initializer {
         require(tos.length == amounts.length, InvalidInputLengths());
-        require(msg.sender == minter, OnlyMinter());
+        require(msg.sender == initializerAccount, OnlyAdmin());
         require(bytes(contractURI_).length > 0, URINeedsToBeSet());
 
         _contractURI = contractURI_;

@@ -12,8 +12,11 @@ interface IZora is IERC7572, IERC20 {
 
     /// @dev Invalid input lengths when the tos and amounts array lengths do not match
     error InvalidInputLengths();
-    /// @dev Error when any user other than the deployer attempts to mint the initial and final supply.
-    error OnlyMinter();
+    /// @dev Error when any user other than the admin attempts to mint the initial and final supply.
+    error OnlyAdmin();
     /// @dev URI needs to be set in initialize
     error URINeedsToBeSet();
+
+    /// @dev Error when a zero address is used as the initializer account
+    error InitializerCannotBeAddressZero();
 }

@@ -26,7 +26,7 @@ contract MineDeterministicConfig is DeploymentBase {
         // first we need to get the salt and deterministic config for the deployerAndCaller contract.
         // we pass to its constructor the deployer address, which means that only the deployer can use that contract
         // to deploy and call other contracts.
-        address deployer = getDeploymentConfig().minter;
+        address deployer = getDeploymentConfig().admin;
 
         // now we mine for the salt and expected address for the zora token
         // when creating the zora token, there are no constructor args...the msg.sender is the caller.

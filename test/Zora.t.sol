@@ -16,6 +16,11 @@ contract ZoraTest is Test {
     // Get reference to the Immutable Create2 Factory contract
     IImmutableCreate2Factory IMMUTABLE_CREATE2_FACTORY = IImmutableCreate2Factory(IMMUTABLE_CREATE2_FACTORY_ADDRESS);
 
+    function testRevertsIfAdminAddressZero() public {
+        vm.expectRevert(IZora.InitializerCannotBeAddressZero.selector);
+        new Zora(address(0));
+    }
+
     function testCanMintInitialDistribution() public {
         address[] memory tos = new address[](2);
         uint256[] memory amounts = new uint256[](2);
@@ -60,7 +65,7 @@ contract ZoraTest is Test {
         Zora zora = new Zora(deployer);
 
         vm.prank(makeAddr("not-deployer"));
-        vm.expectRevert(IZora.OnlyMinter.selector);
+        vm.expectRevert(IZora.OnlyAdmin.selector);
         zora.initialize(tos, amounts, "");
     }
 
@@ -91,7 +96,7 @@ contract ZoraTest is Test {
         // Encode the initial initialize call for the Zora token
 
         // Test access control: factory deployer cannot deploy Zora token
-        vm.expectRevert(IZora.OnlyMinter.selector);
+        vm.expectRevert(IZora.OnlyAdmin.selector);
         IZora(zora).initialize(tos, amounts, "uri");
 
         // Deploy Zora token with initial distribution using the authorized deployer

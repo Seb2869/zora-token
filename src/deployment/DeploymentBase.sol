@@ -20,6 +20,7 @@ contract DeploymentBase is Script {
 
     struct DeploymentConfig {
         address admin;
+        string contractURI;
         InitialMint[] initialMints;
     }
 
@@ -106,6 +107,6 @@ contract DeploymentBase is Script {
         from = config.admin;
 
         (address[] memory tos, uint256[] memory amounts) = getInitialMints();
-        call = abi.encodeWithSelector(IZora.initialize.selector, tos, amounts);
+        call = abi.encodeWithSelector(IZora.initialize.selector, tos, amounts, config.contractURI);
     }
 }

@@ -7,11 +7,10 @@ import {Test} from "forge-std/Test.sol";
 import {IImmutableCreate2Factory} from "../src/deployment/IImmutableCreate2Factory.sol";
 import {Create2} from "@openzeppelin/contracts/utils/Create2.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {DeploymentBase} from "../src/deployment/DeploymentBase.sol";
 
-contract ZoraTest is Test {
+contract ZoraTest is Test, DeploymentBase {
     address deployer = makeAddr("deployer");
-
-    address constant IMMUTABLE_CREATE2_FACTORY_ADDRESS = 0x0000000000FFe8B47B3e2130213B802212439497;
 
     // Get reference to the Immutable Create2 Factory contract
     IImmutableCreate2Factory IMMUTABLE_CREATE2_FACTORY = IImmutableCreate2Factory(IMMUTABLE_CREATE2_FACTORY_ADDRESS);
@@ -125,5 +124,33 @@ contract ZoraTest is Test {
         uint256[] memory amounts = new uint256[](0);
         zora.initialize(tos, amounts, uri);
         vm.assertEq(zora.contractURI(), "uri://");
+    }
+
+    function testDeterministicDeploy() public {
+        vm.createSelectFork("base", 26943428);
+        DeterministicConfig memory deterministicConfig = getDeterministicConfig();
+        // test that the deployed address is correct
+        address deployedAddress = IImmutableCreate2Factory(IMMUTABLE_CREATE2_FACTORY_ADDRESS).safeCreate2(
+            deterministicConfig.salt,
+            deterministicConfig.creationCode
+        );
+        assertEq(deployedAddress, deterministicConfig.expectedAddress);
+
+        // test that the configured admin can initialize the token
+        (address initializeFrom, bytes memory initializeCall) = getInitializeCall();
+
+        // cannot initialize if not the admin
+        (bool success, ) = deployedAddress.call(initializeCall);
+        assertEq(success, false);
+
+        // this should succeed as its being called by the admin
+        vm.prank(initializeFrom);
+        (success, ) = deployedAddress.call(initializeCall);
+        assertEq(success, true);
+
+        // cannot reinitialize
+        vm.prank(initializeFrom);
+        (success, ) = deployedAddress.call(initializeCall);
+        assertEq(success, false);
     }
 }

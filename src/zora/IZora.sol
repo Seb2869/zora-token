@@ -8,17 +8,18 @@ interface IZora is IERC7572, IERC20 {
     /// @notice Used once during deploy to mint and allocate the initial and total supply of the ERC20
     /// @param tos Addresses to allocate tokens to by the deployer
     /// @param amounts Amounts of tokens to allocate alongside the tos address array
+    /// @param uri Contract URI to set for the token metadata
     function initialize(address[] calldata tos, uint256[] calldata amounts, string memory uri) external;
 
-    /// @dev Invalid input lengths when the tos and amounts array lengths do not match
+    /// @notice Invalid input lengths when the tos and amounts array lengths do not match
     error InvalidInputLengths();
 
-    /// @dev Error when any user other than the admin attempts to mint the initial and final supply.
+    /// @notice Error when any user other than the admin attempts to mint the initial and final supply
     error OnlyAdmin();
 
-    /// @dev URI needs to be set in initialize
+    /// @notice Error when URI is not provided during initialization
     error URINeedsToBeSet();
 
-    /// @dev Error when a zero address is used as the initializer account
+    /// @notice Error when a zero address is used as the initializer account
     error InitializerCannotBeAddressZero();
 }

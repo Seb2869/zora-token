@@ -30,12 +30,21 @@ contract DeploymentBase is Script {
         bytes creationCode;
     }
 
+    struct ClaimConfig {
+        address admin;
+        uint256 claimStart;
+    }
+
     function deploymentConfigPath() internal pure returns (string memory) {
         return "script/config/deploymentConfig.json";
     }
 
     function deterministicConfigPath() internal pure returns (string memory) {
         return "script/config/deterministicConfig.json";
+    }
+
+    function claimConfigPath() internal pure returns (string memory) {
+        return "script/config/claimConfig.json";
     }
 
     function getDeploymentConfig() internal view returns (DeploymentConfig memory) {
@@ -45,6 +54,14 @@ contract DeploymentBase is Script {
         // Parse the entire JSON into our struct
         bytes memory data = vm.parseJson(json);
         return abi.decode(data, (DeploymentConfig));
+    }
+
+    function getClaimConfig() internal view returns (ClaimConfig memory) {
+        string memory path = claimConfigPath();
+        string memory json = vm.readFile(path);
+
+        bytes memory data = vm.parseJson(json);
+        return abi.decode(data, (ClaimConfig));
     }
 
     function saveDeterministicConfig(DeterministicConfig memory deterministicConfig) internal {

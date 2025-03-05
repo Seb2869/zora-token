@@ -4,6 +4,7 @@ pragma solidity ^0.8.28;
 import {Test} from "forge-std/Test.sol";
 import {Zora} from "../src/zora/Zora.sol";
 import {ZoraTokenCommunityClaim} from "../src/claim/ZoraTokenCommunityClaim.sol";
+import {IZoraTokenCommunityClaim} from "../src/claim/IZoraTokenCommunityClaim.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 interface IMultiOwnable {
@@ -98,7 +99,7 @@ contract ZoraTokenCommunityClaimTest is Test {
         bytes32[] memory compactAllocations = toCompactAllocations(accounts, amounts);
 
         vm.prank(makeAddr("not-admin"));
-        vm.expectRevert(ZoraTokenCommunityClaim.OnlyAdmin.selector);
+        vm.expectRevert(IZoraTokenCommunityClaim.OnlyAdmin.selector);
         claim.setAllocations(compactAllocations);
     }
 
@@ -115,7 +116,7 @@ contract ZoraTokenCommunityClaimTest is Test {
         vm.warp(claimStart + 1);
 
         vm.prank(deployer);
-        vm.expectRevert(ZoraTokenCommunityClaim.ClaimOpened.selector);
+        vm.expectRevert(IZoraTokenCommunityClaim.ClaimOpened.selector);
         claim.setAllocations(compactAllocations);
     }
 
@@ -161,7 +162,7 @@ contract ZoraTokenCommunityClaimTest is Test {
         claim.setAllocations(compactAllocations);
 
         vm.prank(user1);
-        vm.expectRevert(ZoraTokenCommunityClaim.ClaimNotOpen.selector);
+        vm.expectRevert(IZoraTokenCommunityClaim.ClaimNotOpen.selector);
         claim.claim(user1);
     }
 
@@ -234,7 +235,7 @@ contract ZoraTokenCommunityClaimTest is Test {
         claim.claimWithSignature(signer, recipient, deadline, signature);
 
         // Second claim should fail due to no allocation
-        vm.expectRevert(ZoraTokenCommunityClaim.AlreadyClaimed.selector);
+        vm.expectRevert(IZoraTokenCommunityClaim.AlreadyClaimed.selector);
         claim.claimWithSignature(signer, recipient, deadline, signature);
     }
 
@@ -261,7 +262,7 @@ contract ZoraTokenCommunityClaimTest is Test {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
         bytes memory signature = abi.encodePacked(r, s, v);
 
-        vm.expectRevert(ZoraTokenCommunityClaim.SignatureExpired.selector);
+        vm.expectRevert(IZoraTokenCommunityClaim.SignatureExpired.selector);
         claim.claimWithSignature(signer, recipient, deadline, signature);
     }
 
@@ -288,7 +289,7 @@ contract ZoraTokenCommunityClaimTest is Test {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(wrongPrivateKey, digest);
         bytes memory signature = abi.encodePacked(r, s, v);
 
-        vm.expectRevert(ZoraTokenCommunityClaim.InvalidSignature.selector);
+        vm.expectRevert(IZoraTokenCommunityClaim.InvalidSignature.selector);
         claim.claimWithSignature(signer, recipient, deadline, signature);
     }
 
@@ -365,7 +366,7 @@ contract ZoraTokenCommunityClaimTest is Test {
         bytes memory signature = abi.encodePacked(r, s, v);
 
         // Attempt to claim with invalid signature should fail
-        vm.expectRevert(ZoraTokenCommunityClaim.InvalidSignature.selector);
+        vm.expectRevert(IZoraTokenCommunityClaim.InvalidSignature.selector);
         claim.claimWithSignature(address(smartWallet), recipient, deadline, signature);
     }
 }

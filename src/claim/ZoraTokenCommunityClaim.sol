@@ -5,37 +5,26 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {SignatureChecker} from "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
 import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
+import {IZoraTokenCommunityClaim} from "./IZoraTokenCommunityClaim.sol";
 
 /// @title Zora Token Claim
 /// @notice Contract for distributing tokens to the Zora community
 /// @dev Allows an admin to set allocations in advance using a storage mapping of addresses to amounts,
 /// avoiding the blockspace congestion that can occur with merkle proofs during claiming
-contract ZoraTokenCommunityClaim is EIP712 {
+contract ZoraTokenCommunityClaim is IZoraTokenCommunityClaim, EIP712 {
     string private constant DOMAIN_NAME = "ZoraTokenCommunityClaim";
     string private constant DOMAIN_VERSION = "1";
 
     // Type hash for the ClaimWithSignature struct
     bytes32 private constant CLAIM_TYPEHASH = keccak256("ClaimWithSignature(address user,address claimTo,uint256 deadline)");
 
-    address public immutable admin;
-    uint256 public immutable claimStart;
+    address public immutable override admin;
+    uint256 public immutable override claimStart;
     IERC20 public immutable token;
 
     // Compact allocations stored as uint96 (token count, will be multiplied by 1e18)
     mapping(address => uint96) private compactAllocations;
-    mapping(address => bool) public hasClaimed;
-
-    error OnlyAdmin();
-    error ClaimNotOpen();
-    error ClaimOpened();
-    error ArrayLengthMismatch();
-    error NoAllocation();
-    error AlreadyClaimed();
-    error InvalidSignature();
-    error SignatureExpired();
-
-    event AllocationsSet(bytes32[] indexed allocations);
-    event Claimed(address indexed account, address indexed claimTo, uint256 amount);
+    mapping(address => bool) public override hasClaimed;
 
     constructor(address _admin, uint256 _claimStart, address _token) EIP712(DOMAIN_NAME, DOMAIN_VERSION) {
         admin = _admin;
@@ -44,14 +33,14 @@ contract ZoraTokenCommunityClaim is EIP712 {
     }
 
     // Public view function to get the full allocation amount with 18 decimals
-    function allocations(address user) public view returns (uint256) {
+    function allocations(address user) public view override returns (uint256) {
         return uint256(compactAllocations[user]);
     }
 
     /// @notice Sets allocations using packed data format for gas efficiency
     /// @dev Each bytes32 contains an address (160 bits) and allocation (96 bits)
     /// @param packedData Array of packed address+allocation data
-    function setAllocations(bytes32[] calldata packedData) external {
+    function setAllocations(bytes32[] calldata packedData) external override {
         require(msg.sender == admin, OnlyAdmin());
         require(!claimIsOpen(), ClaimOpened());
 
@@ -69,11 +58,11 @@ contract ZoraTokenCommunityClaim is EIP712 {
         emit AllocationsSet(packedData);
     }
 
-    function claimIsOpen() public view returns (bool) {
+    function claimIsOpen() public view override returns (bool) {
         return block.timestamp >= claimStart;
     }
 
-    function claim(address _claimTo) external {
+    function claim(address _claimTo) external override {
         _claim(msg.sender, _claimTo);
     }
 
@@ -82,7 +71,7 @@ contract ZoraTokenCommunityClaim is EIP712 {
     /// @param _claimTo The address to send the tokens to
     /// @param _deadline The deadline for the signature to be valid
     /// @param _signature The signature authorizing the claim
-    function claimWithSignature(address _user, address _claimTo, uint256 _deadline, bytes calldata _signature) external {
+    function claimWithSignature(address _user, address _claimTo, uint256 _deadline, bytes calldata _signature) external override {
         require(block.timestamp <= _deadline, SignatureExpired());
 
         // Verify signature
@@ -113,8 +102,8 @@ contract ZoraTokenCommunityClaim is EIP712 {
         SafeERC20.safeTransfer(token, _claimTo, amount);
     }
 
-    // Make the domain separator accessible for testing
-    function getDomainSeparator() public view returns (bytes32) {
+    /// @notice Make the domain separator accessible for testing
+    function getDomainSeparator() public view override returns (bytes32) {
         return _domainSeparatorV4();
     }
 }

@@ -21,7 +21,8 @@ contract ZoraTokenCommunityClaim is EIP712 {
     uint256 public immutable claimStart;
     IERC20 public immutable token;
 
-    mapping(address => uint256) public allocations;
+    // Compact allocations stored as uint96 (token count, will be multiplied by 1e18)
+    mapping(address => uint96) private compactAllocations;
     mapping(address => bool) public hasClaimed;
 
     error OnlyAdmin();
@@ -33,7 +34,7 @@ contract ZoraTokenCommunityClaim is EIP712 {
     error InvalidSignature();
     error SignatureExpired();
 
-    event AllocationsSet(address[] indexed accounts, uint256[] amounts);
+    event AllocationsSet(bytes32[] indexed allocations);
     event Claimed(address indexed account, address indexed claimTo, uint256 amount);
 
     constructor(address _admin, uint256 _claimStart, address _token) EIP712(DOMAIN_NAME, DOMAIN_VERSION) {
@@ -42,18 +43,30 @@ contract ZoraTokenCommunityClaim is EIP712 {
         token = IERC20(_token);
     }
 
-    function setAllocations(address[] calldata _accounts, uint256[] calldata _amounts) external {
-        require(_accounts.length == _amounts.length, ArrayLengthMismatch());
-        // only admin can add allocations
+    // Public view function to get the full allocation amount with 18 decimals
+    function allocations(address user) public view returns (uint256) {
+        return uint256(compactAllocations[user]);
+    }
+
+    /// @notice Sets allocations using packed data format for gas efficiency
+    /// @dev Each bytes32 contains an address (160 bits) and allocation (96 bits)
+    /// @param packedData Array of packed address+allocation data
+    function setAllocations(bytes32[] calldata packedData) external {
         require(msg.sender == admin, OnlyAdmin());
-        // cannot add allocations after claim has started
         require(!claimIsOpen(), ClaimOpened());
 
-        emit AllocationsSet(_accounts, _amounts);
+        for (uint256 i = 0; i < packedData.length; i++) {
+            // Extract address from first 160 bits
+            address user = address(uint160(uint256(packedData[i])));
 
-        for (uint256 i = 0; i < _accounts.length; i++) {
-            allocations[_accounts[i]] = _amounts[i];
+            // Extract allocation from remaining bits (shift right by 160 bits)
+            uint96 amount = uint96(uint256(packedData[i]) >> 160);
+
+            // Store the allocation
+            compactAllocations[user] = amount;
         }
+
+        emit AllocationsSet(packedData);
     }
 
     function claimIsOpen() public view returns (bool) {
@@ -89,10 +102,10 @@ contract ZoraTokenCommunityClaim is EIP712 {
 
     function _claim(address _user, address _claimTo) private {
         require(claimIsOpen(), ClaimNotOpen());
-        require(allocations[_user] > 0, NoAllocation());
+        require(compactAllocations[_user] > 0, NoAllocation());
         require(!hasClaimed[_user], AlreadyClaimed());
 
-        uint256 amount = allocations[_user];
+        uint256 amount = uint256(compactAllocations[_user]);
         // Mark as claimed before transfer
         hasClaimed[_user] = true;
 

@@ -57,19 +57,31 @@ contract ZoraTokenCommunityClaimTest is Test {
         vm.stopPrank();
     }
 
+    function toCompactAllocations(address[] memory accounts, uint96[] memory amounts) private pure returns (bytes32[] memory) {
+        bytes32[] memory packedData = new bytes32[](accounts.length);
+        for (uint256 i = 0; i < accounts.length; i++) {
+            // Pack address into lower 160 bits, amount into upper 96 bits
+            // This matches how the contract unpacks: address from first 160 bits, amount from bits shifted right by 160
+            packedData[i] = bytes32(uint256(uint160(accounts[i])) | (uint256(amounts[i]) << 160));
+        }
+        return packedData;
+    }
+
     function testSetAllocations() public {
         address user1 = makeAddr("user1");
         address user2 = makeAddr("user2");
 
         address[] memory accounts = new address[](2);
-        uint256[] memory amounts = new uint256[](2);
+        uint96[] memory amounts = new uint96[](2);
         accounts[0] = user1;
         accounts[1] = user2;
         amounts[0] = 100 * 1e18;
         amounts[1] = 200 * 1e18;
 
+        bytes32[] memory compactAllocations = toCompactAllocations(accounts, amounts);
+
         vm.prank(deployer);
-        claim.setAllocations(accounts, amounts);
+        claim.setAllocations(compactAllocations);
 
         assertEq(claim.allocations(user1), 100 * 1e18);
         assertEq(claim.allocations(user2), 200 * 1e18);
@@ -79,41 +91,48 @@ contract ZoraTokenCommunityClaimTest is Test {
         address user1 = makeAddr("user1");
 
         address[] memory accounts = new address[](1);
-        uint256[] memory amounts = new uint256[](1);
+        uint96[] memory amounts = new uint96[](1);
         accounts[0] = user1;
         amounts[0] = 100 * 1e18;
 
+        bytes32[] memory compactAllocations = toCompactAllocations(accounts, amounts);
+
         vm.prank(makeAddr("not-admin"));
         vm.expectRevert(ZoraTokenCommunityClaim.OnlyAdmin.selector);
-        claim.setAllocations(accounts, amounts);
+        claim.setAllocations(compactAllocations);
     }
 
     function testCannotSetAllocationsAfterClaimStart() public {
         address user1 = makeAddr("user1");
 
         address[] memory accounts = new address[](1);
-        uint256[] memory amounts = new uint256[](1);
+        uint96[] memory amounts = new uint96[](1);
         accounts[0] = user1;
         amounts[0] = 100 * 1e18;
+
+        bytes32[] memory compactAllocations = toCompactAllocations(accounts, amounts);
 
         vm.warp(claimStart + 1);
 
         vm.prank(deployer);
         vm.expectRevert(ZoraTokenCommunityClaim.ClaimOpened.selector);
-        claim.setAllocations(accounts, amounts);
+        claim.setAllocations(compactAllocations);
     }
 
     function testBasicClaim() public {
         address user1 = makeAddr("user1");
-        uint256 amount = 100 * 1e18;
+        uint96 amount = 100 * 1e18;
 
         // Set allocation
         address[] memory accounts = new address[](1);
-        uint256[] memory amounts = new uint256[](1);
+        uint96[] memory amounts = new uint96[](1);
         accounts[0] = user1;
         amounts[0] = amount;
+
+        bytes32[] memory compactAllocations = toCompactAllocations(accounts, amounts);
+
         vm.prank(deployer);
-        claim.setAllocations(accounts, amounts);
+        claim.setAllocations(compactAllocations);
 
         // Warp to claim period
         vm.warp(claimStart + 1);
@@ -132,12 +151,14 @@ contract ZoraTokenCommunityClaimTest is Test {
         address user1 = makeAddr("user1");
 
         address[] memory accounts = new address[](1);
-        uint256[] memory amounts = new uint256[](1);
+        uint96[] memory amounts = new uint96[](1);
         accounts[0] = user1;
         amounts[0] = 100 * 1e18;
 
+        bytes32[] memory compactAllocations = toCompactAllocations(accounts, amounts);
+
         vm.prank(deployer);
-        claim.setAllocations(accounts, amounts);
+        claim.setAllocations(compactAllocations);
 
         vm.prank(user1);
         vm.expectRevert(ZoraTokenCommunityClaim.ClaimNotOpen.selector);
@@ -154,15 +175,18 @@ contract ZoraTokenCommunityClaimTest is Test {
         uint256 privateKey = 0x1234;
         address signer = vm.addr(privateKey);
         address recipient = makeAddr("recipient");
-        uint256 amount = 100 * 1e18;
+        uint96 amount = 100 * 1e18;
 
         // Set allocation
         address[] memory accounts = new address[](1);
-        uint256[] memory amounts = new uint256[](1);
+        uint96[] memory amounts = new uint96[](1);
         accounts[0] = signer;
         amounts[0] = amount;
+
+        bytes32[] memory compactAllocations = toCompactAllocations(accounts, amounts);
+
         vm.prank(deployer);
-        claim.setAllocations(accounts, amounts);
+        claim.setAllocations(compactAllocations);
 
         // Warp to claim period
         vm.warp(claimStart + 1);
@@ -186,15 +210,18 @@ contract ZoraTokenCommunityClaimTest is Test {
         uint256 privateKey = 0x1234;
         address signer = vm.addr(privateKey);
         address recipient = makeAddr("recipient");
-        uint256 amount = 100 * 1e18;
+        uint96 amount = 100 * 1e18;
 
         // Set allocation
         address[] memory accounts = new address[](1);
-        uint256[] memory amounts = new uint256[](1);
+        uint96[] memory amounts = new uint96[](1);
         accounts[0] = signer;
         amounts[0] = amount;
+
+        bytes32[] memory compactAllocations = toCompactAllocations(accounts, amounts);
+
         vm.prank(deployer);
-        claim.setAllocations(accounts, amounts);
+        claim.setAllocations(compactAllocations);
 
         vm.warp(claimStart + 1);
 
@@ -218,11 +245,14 @@ contract ZoraTokenCommunityClaimTest is Test {
 
         // Set allocation
         address[] memory accounts = new address[](1);
-        uint256[] memory amounts = new uint256[](1);
+        uint96[] memory amounts = new uint96[](1);
         accounts[0] = signer;
         amounts[0] = 100 * 1e18;
+
+        bytes32[] memory compactAllocations = toCompactAllocations(accounts, amounts);
+
         vm.prank(deployer);
-        claim.setAllocations(accounts, amounts);
+        claim.setAllocations(compactAllocations);
 
         vm.warp(claimStart + 1);
 
@@ -242,11 +272,14 @@ contract ZoraTokenCommunityClaimTest is Test {
 
         // Set allocation
         address[] memory accounts = new address[](1);
-        uint256[] memory amounts = new uint256[](1);
+        uint96[] memory amounts = new uint96[](1);
         accounts[0] = signer;
         amounts[0] = 100 * 1e18;
+
+        bytes32[] memory compactAllocations = toCompactAllocations(accounts, amounts);
+
         vm.prank(deployer);
-        claim.setAllocations(accounts, amounts);
+        claim.setAllocations(compactAllocations);
 
         vm.warp(claimStart + 1);
 
@@ -266,15 +299,18 @@ contract ZoraTokenCommunityClaimTest is Test {
         // Deploy mock smart wallet
         MockSmartWallet smartWallet = new MockSmartWallet(owner);
         address recipient = makeAddr("recipient");
-        uint256 amount = 100 * 1e18;
+        uint96 amount = 100 * 1e18;
 
         // Set allocation for the smart wallet
         address[] memory accounts = new address[](1);
-        uint256[] memory amounts = new uint256[](1);
+        uint96[] memory amounts = new uint96[](1);
         accounts[0] = address(smartWallet);
         amounts[0] = amount;
+
+        bytes32[] memory compactAllocations = toCompactAllocations(accounts, amounts);
+
         vm.prank(deployer);
-        claim.setAllocations(accounts, amounts);
+        claim.setAllocations(compactAllocations);
 
         // Warp to claim period
         vm.warp(claimStart + 1);
@@ -304,15 +340,18 @@ contract ZoraTokenCommunityClaimTest is Test {
         // Deploy mock smart wallet
         MockSmartWallet smartWallet = new MockSmartWallet(owner);
         address recipient = makeAddr("recipient");
-        uint256 amount = 100 * 1e18;
+        uint96 amount = 100 * 1e18;
 
         // Set allocation for the smart wallet
         address[] memory accounts = new address[](1);
-        uint256[] memory amounts = new uint256[](1);
+        uint96[] memory amounts = new uint96[](1);
         accounts[0] = address(smartWallet);
         amounts[0] = amount;
+
+        bytes32[] memory compactAllocations = toCompactAllocations(accounts, amounts);
+
         vm.prank(deployer);
-        claim.setAllocations(accounts, amounts);
+        claim.setAllocations(compactAllocations);
 
         // Warp to claim period
         vm.warp(claimStart + 1);

@@ -58,6 +58,11 @@ interface IZoraTokenCommunityClaim {
     error SignatureExpired();
 
     /**
+     * @notice Error thrown when the token is invalid
+     */
+    error InvalidToken();
+
+    /**
      * @notice Returns the admin address
      * @return The admin address
      */

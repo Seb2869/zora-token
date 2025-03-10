@@ -29,6 +29,11 @@ contract ZoraTokenCommunityClaim is IZoraTokenCommunityClaim, EIP712 {
     constructor(address _admin, uint256 _claimStart, address _token) EIP712(DOMAIN_NAME, DOMAIN_VERSION) {
         admin = _admin;
         claimStart = _claimStart;
+
+        if (_token.code.length == 0) {
+            revert InvalidToken();
+        }
+
         token = IERC20(_token);
     }
 

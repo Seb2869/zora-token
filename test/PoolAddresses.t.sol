@@ -50,7 +50,7 @@ interface IUniswapV3Factory {
 
 contract PoolAddressesTest is Test {
     function testPoolAddresses() public {
-        vm.createSelectFork("base");
+        vm.createSelectFork("base", 26990278);
 
         address factory = 0x33128a8fC17869897dcE68Ed026d694621f6FDfD;
 

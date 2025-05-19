@@ -39,6 +39,6 @@ contract MineDeterministicConfig is DeploymentBase {
         DeterministicConfig memory deterministicConfig;
         deterministicConfig.creationCode = tokenCreationCode;
 
-        saveDeterministicConfig(deterministicConfig);
+        //saveDeterministicConfig(deterministicConfig);
     }
 }

@@ -10,6 +10,10 @@ This repository contains the contracts for the Zora token.
 - [ZoraTokenCommunityClaim.sol](./src/claim/ZoraTokenCommunityClaim.sol) - Main community claim contract.
 - [IZoraTokenCommunityClaim.sol](./src/claim/IZoraTokenCommunityClaim.sol) - Main community claim contract interface.
 
+## Audit Report
+
+This project has a [Zellic Audit Report](audit%2FZora%20Token%20-%20Zellic%20Audit%20Report.pdf) at ba75438
+
 ## Setup
 
 Install dependencies

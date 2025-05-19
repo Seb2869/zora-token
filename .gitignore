@@ -1,7 +1,7 @@
 # Compiler files
 cache/
 out/
-abis/
+abis/*.json
 
 # Ignores development broadcast logs
 broadcast
@@ -32,3 +32,5 @@ dist/
 !.env.anvil
 
 .vercel
+
+package/generated.ts

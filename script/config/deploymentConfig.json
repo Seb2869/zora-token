@@ -1,16 +1,11 @@
 {
   "admin": "0x078362961fCF3E48Cdc850F9cBCa335d0b47d968",
-  "contractURI": "https://theme.wtf/assets/metadata.json",
+  "contractURI": "https://www.theme.wtf/assets/metadata.json",
   "initialMints": [
     {
       "name": "zora",
-      "addr": "0x7bf90111Ad7C22bec9E9dFf8A01A44713CC1b1B6",
-      "amount": "5_000_000_000"
-    },
-    {
-      "name": "claimContract",
-      "addr": "0x7bf90111Ad7C22bec9E9dFf8A01A44713CC1b1B6",
-      "amount": "5_000_000_000"
+      "addr": "0x078362961fCF3E48Cdc850F9cBCa335d0b47d968",
+      "amount": "10_000_000_000"
     }
   ]
 }

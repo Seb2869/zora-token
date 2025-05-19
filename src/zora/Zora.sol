@@ -48,7 +48,7 @@ import {IZora} from "./IZora.sol";
 /// @notice Zora Token contract
 contract Zora is IZora, ERC20, ERC20Permit, ERC20Votes, Initializable {
     /// @notice Account allowed to mint total supply and set the contract URI upon initialization
-    address public immutable initializerAccount;
+    address immutable initializerAccount;
 
     /// @notice Contract URI for token metadata
     /// @dev Set only during initialization and cannot be changed afterward

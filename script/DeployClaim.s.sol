@@ -9,10 +9,25 @@ contract DeployClaim is DeploymentBase {
     function run() external {
         vm.startBroadcast();
 
-        DeterministicConfig memory deterministicConfig = getDeterministicConfig();
-        ClaimConfig memory claimConfig = getClaimConfig();
+        AddressesConfig memory addressesConfig = getAddressesConfig();
 
-        new ZoraTokenCommunityClaim(claimConfig.admin, claimConfig.claimStart, deterministicConfig.expectedAddress);
+        DeterministicConfig memory claimDeterministicConfig = getDeterministicConfig(ZORA_TOKEN_COMMUNITY_CLAIM_BASE_CONTRACT_NAME);
+
+        addressesConfig.zoraTokenCommunityClaim = getImmutableCreate2Factory().safeCreate2(
+            claimDeterministicConfig.salt,
+            claimDeterministicConfig.creationCode
+        );
+
+        require(addressesConfig.zoraTokenCommunityClaim == claimDeterministicConfig.expectedAddress, "Mismatched addresses");
+
+        ZoraTokenCommunityClaim claim = ZoraTokenCommunityClaim(addressesConfig.zoraTokenCommunityClaim);
+
+        ClaimConfig memory claimConfig = getClaimConfig(block.chainid);
+
+        require(claim.admin() == claimConfig.admin, "Mismatched admin");
+        require(claim.allocationSetter() == claimConfig.allocationSetter, "Mismatched allocation setter");
+
+        saveAddressesConfig(addressesConfig);
 
         vm.stopBroadcast();
     }

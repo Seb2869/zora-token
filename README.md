@@ -1,12 +1,14 @@
 # Zora Token Contracts
 
-**These contract are in active development and not finalized**
-
 This repository contains the contracts for the Zora token.
 
 ## Contracts
 
 - [Zora.sol](./src/Zora.sol) - The main Zora token contract.
+- [IZora.sol](./src/IZora.sol) - The Zora token contract interface.
+
+- [ZoraTokenCommunityClaim.sol](./src/claim/ZoraTokenCommunityClaim.sol) - Main community claim contract.
+- [IZoraTokenCommunityClaim.sol](./src/claim/IZoraTokenCommunityClaim.sol) - Main community claim contract interface.
 
 ## Setup
 

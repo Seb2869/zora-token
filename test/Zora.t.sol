@@ -128,7 +128,7 @@ contract ZoraTest is Test, DeploymentBase {
 
     function testDeterministicDeploy() public {
         vm.createSelectFork("base", 26943428);
-        DeterministicConfig memory deterministicConfig = getDeterministicConfig();
+        DeterministicConfig memory deterministicConfig = getDeterministicConfig(ZORA_TOKEN_CONTRACT_NAME);
         // test that the deployed address is correct
         address deployedAddress = IImmutableCreate2Factory(IMMUTABLE_CREATE2_FACTORY_ADDRESS).safeCreate2(
             deterministicConfig.salt,

@@ -13,5 +13,4 @@ fs_permissions = [
 ]
 
 [rpc_endpoints]
-base = "https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}"
-unknown_chain = { key = "${TENDERLY_ACCESS_KEY}", chain = 73571, url = "${TENDERLY_VIRTUAL_TESTNET_RPC_URL}/verify/etherscan" }
+base = "${TENDERLY_KEY}"
